@@ -32,7 +32,7 @@ while 1:
         voltage = channel.voltage
         adc_voltage.append(voltage)
         adc_voltage_fd.write(f"{counter+1},{voltage}\r\n")
-        time.sleep(0.1)
+        time.sleep(0.01)
         counter += 1
         if counter == 256:
             break

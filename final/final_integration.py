@@ -8,6 +8,7 @@ import Jetson.GPIO as GPIO
 
 import time
 
+import i2c_lsm303 as lsm303
 
 # DIR = 18
 # STEP = 32
@@ -26,6 +27,7 @@ MS1 = board.D17
 
 
 spi = busio.SPI(board.SCK, board.MOSI, board.MISO)
+i2c = busio.I2C(board.SCL, board.SDA)
 cs = digitalio.DigitalInOut(board.D5)
 dir = digitalio.DigitalInOut(DIR)
 step = digitalio.DigitalInOut(STEP)
@@ -70,6 +72,7 @@ def pwm(frequency, dutycycle):
 # Start the program here
 print("Starting")
 setup()
+lsm303.init(i2c)
 
 if spi.try_lock():
     spi.configure(baudrate=1000000)
@@ -89,7 +92,14 @@ while 1:
         # x * 2000 / 65535
         frequency = int((channel.value * MAX_MOTOR_FREQUENCY) /
                         MAX_POTENTIOMETER_RANGE)
-        print(frequency)
         pwm(frequency, DUTY_CYCLE)
+        print(f"Frequency: {frequency}")
+
+        # Get the LSM303 data
+        print(f"Temp: {lsm303.get_temp(i2c)}")
+        print(f"Accelerometer: {lsm303.get_accelerometer(i2c)}")
+        print(f"Magnetometer: {lsm303.get_magnetometer(i2c)}")
     except KeyboardInterrupt:
         break
+print("Closing")
+i2c.deinit()
